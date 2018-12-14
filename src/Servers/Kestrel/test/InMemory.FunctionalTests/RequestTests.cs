@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1000,14 +1000,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task SynchronousReadsAllowedByDefault()
+        public async Task SynchronousReadsDisallowedByDefault()
         {
             var firstRequest = true;
 
             using (var server = new TestServer(async context =>
             {
                 var bodyControlFeature = context.Features.Get<IHttpBodyControlFeature>();
-                Assert.True(bodyControlFeature.AllowSynchronousIO);
+                Assert.False(bodyControlFeature.AllowSynchronousIO);
 
                 var buffer = new byte[6];
                 var offset = 0;
@@ -1017,17 +1017,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 if (firstRequest)
                 {
-                    while (offset < 5)
-                    {
-                        offset += context.Request.Body.Read(buffer, offset, 5 - offset);
-                    }
-
-                    firstRequest = false;
-                }
-                else
-                {
-                    bodyControlFeature.AllowSynchronousIO = false;
-
                     // Synchronous reads now throw.
                     var ioEx = Assert.Throws<InvalidOperationException>(() => context.Request.Body.Read(new byte[1], 0, 1));
                     Assert.Equal(CoreStrings.SynchronousReadsDisallowed, ioEx.Message);
@@ -1038,6 +1027,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     while (offset < 5)
                     {
                         offset += await context.Request.Body.ReadAsync(buffer, offset, 5 - offset);
+                    }
+
+                    firstRequest = false;
+                }
+                else
+                {
+                    bodyControlFeature.AllowSynchronousIO = true;
+
+                    while (offset < 5)
+                    {
+                        offset += context.Request.Body.Read(buffer, offset, 5 - offset);
                     }
                 }
 

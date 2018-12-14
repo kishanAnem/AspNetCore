@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -2285,31 +2285,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
 
         [Fact]
-        public async Task SynchronousWritesAllowedByDefault()
+        public async Task SynchronousWritesDisallowedByDefault()
         {
             var firstRequest = true;
 
             using (var server = new TestServer(async context =>
             {
                 var bodyControlFeature = context.Features.Get<IHttpBodyControlFeature>();
-                Assert.True(bodyControlFeature.AllowSynchronousIO);
+                Assert.False(bodyControlFeature.AllowSynchronousIO);
 
                 context.Response.ContentLength = 6;
 
                 if (firstRequest)
                 {
-                    context.Response.Body.Write(Encoding.ASCII.GetBytes("Hello1"), 0, 6);
+                    // Synchronous writes now throw.
+                    var ioEx = Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(Encoding.ASCII.GetBytes("What!?"), 0, 6));
+                    Assert.Equal(CoreStrings.SynchronousWritesDisallowed, ioEx.Message);
+                    await context.Response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello1"), 0, 6);
                     firstRequest = false;
                 }
                 else
                 {
-                    bodyControlFeature.AllowSynchronousIO = false;
-
-                    // Synchronous writes now throw.
-                    var ioEx = Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(Encoding.ASCII.GetBytes("What!?"), 0, 6));
-                    Assert.Equal(CoreStrings.SynchronousWritesDisallowed, ioEx.Message);
-
-                    await context.Response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello2"), 0, 6);
+                    bodyControlFeature.AllowSynchronousIO = true;
+                    context.Response.Body.Write(Encoding.ASCII.GetBytes("Hello2"), 0, 6);
                 }
             }, new TestServiceContext(LoggerFactory)))
             {
