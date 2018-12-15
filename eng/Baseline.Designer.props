@@ -324,7 +324,7 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.CSharp" Version="[4.5.0, )" />
-    <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[12.0.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Localization.Routing-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Localization.Routing' ">
