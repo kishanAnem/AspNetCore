@@ -90,6 +90,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                         value: value);
                 }
 
+                TrimModel(bindingContext, value, model);
+
                 CheckModel(bindingContext, valueProviderResult, model);
 
                 _logger.DoneAttemptingToBindModel(bindingContext);
@@ -135,5 +137,25 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 bindingContext.Result = ModelBindingResult.Success(model);
             }
         }
+
+        private void TrimModel(ModelBindingContext bindingContext, string value, object model)
+        {
+            if (bindingContext.ModelMetadata.CanTrim && !string.IsNullOrWhiteSpace(value))
+            {
+                switch (bindingContext.ModelMetadata.TrimType)
+                {
+                    case TrimType.TrimEnd:
+                        model = value.TrimEnd();
+                        break;
+                    case TrimType.TrimStart:
+                        model = value.TrimStart();
+                        break;
+                    case TrimType.Trim:
+                        model = value.Trim();
+                        break;
+                }
+            }
+        }
+
     }
 }

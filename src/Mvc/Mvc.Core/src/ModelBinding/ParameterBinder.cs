@@ -242,6 +242,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     modelBindingResult.Model,
                     metadata);
             }
+            else if (metadata.CanTrim)
+            {
+
+            }
         }
 
         private void RecalculateModelMetadata(

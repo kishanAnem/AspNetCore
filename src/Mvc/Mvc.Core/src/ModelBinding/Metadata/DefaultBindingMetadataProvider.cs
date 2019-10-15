@@ -72,8 +72,51 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 context.BindingMetadata.IsBindingAllowed = bindingBehavior.Behavior != BindingBehavior.Never;
                 context.BindingMetadata.IsBindingRequired = bindingBehavior.Behavior == BindingBehavior.Required;
             }
+
+            context.BindingMetadata.CanTrim = FindCanTrim(context);
+            context.BindingMetadata.TrimType = FindTrimType(context);
+
         }
 
+        private static bool FindCanTrim(BindingMetadataProviderContext context)
+        {
+            var isSringType = typeof(string) == context.Key.ModelType;
+
+            if (!isSringType)
+            {
+                return false;
+            }
+
+            switch (context.Key.MetadataKind)
+            {
+                case ModelMetadataKind.Property:
+                    return context.PropertyAttributes.OfType<TrimAttribute>().Any() && isSringType;
+
+                case ModelMetadataKind.Parameter:
+                    return context.ParameterAttributes.OfType<TrimAttribute>().Any() && isSringType;
+                default:
+                    return false;
+            }
+        }
+        private static TrimType FindTrimType(BindingMetadataProviderContext context)
+        {
+            if (!context.BindingMetadata.CanTrim)
+            {
+                return default;
+            }
+
+            switch (context.Key.MetadataKind)
+            {
+                case ModelMetadataKind.Property:
+                    var trimAttribute = context.PropertyAttributes.OfType<TrimAttribute>().FirstOrDefault();
+                    return trimAttribute.TrimType;
+                case ModelMetadataKind.Parameter:
+                    trimAttribute = context.PropertyAttributes.OfType<TrimAttribute>().FirstOrDefault();
+                    return trimAttribute.TrimType;
+                default:
+                    return default;
+            }
+        }
         private static BindingBehaviorAttribute FindBindingBehavior(BindingMetadataProviderContext context)
         {
             switch (context.Key.MetadataKind)

@@ -402,6 +402,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract Action<object, object> PropertySetter { get; }
 
         /// <summary>
+        /// Gets a value indicating whether or not the model value can trim. This is only
+        /// applicable for string properties.
+        /// </summary>
+        /// <remarks>
+        /// If <c>true</c> then the model value has value, it can consider trim.
+        /// </remarks>
+        public abstract bool CanTrim { get; }
+        public abstract TrimType TrimType { get; }
+
+        /// <summary>
         /// Gets a display name for the model.
         /// </summary>
         /// <remarks>
