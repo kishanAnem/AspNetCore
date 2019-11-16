@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Xunit;
@@ -658,6 +659,67 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             Assert.Equal(initialValue, context.BindingMetadata.IsBindingRequired);
         }
 
+        [Theory]
+        [InlineData(typeof(string), true, TrimType.Trim)]
+        [InlineData(typeof(string), true, TrimType.TrimStart)]
+        [InlineData(typeof(string), true, TrimType.TrimEnd)]
+        [InlineData(typeof(object), false, TrimType.Trim)]
+        public void CreateBindingDetails_CanTrim_OnProperty(Type propertyType, bool canTrim, TrimType trimType)
+        {
+            // Arrange
+            var propertyAttributes = new object[]
+            {
+                new TrimAttribute(trimType)
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForProperty(propertyType, "UserId", propertyType),
+                new ModelAttributes(new object[0], propertyAttributes, null));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.CreateBindingMetadata(context);
+
+            // Assert
+            Assert.Equal(canTrim, context.BindingMetadata.CanTrim);
+            Assert.Equal(trimType, context.BindingMetadata.TrimType);
+        }
+
+        [Theory]
+        [MemberData(nameof(ForParameter))]
+        public void CreateBindingDetails_CanTrim_FindTrimType_OnParameter(ParameterInfo parameterInfo, TrimType trimType, bool canTrim)
+        {
+            // Arrange
+            var parameterAttributes = new object[]
+            {
+                new TrimAttribute(trimType),
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForParameter(parameterInfo),
+                new ModelAttributes(Array.Empty<object>(), null, parameterAttributes));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.CreateBindingMetadata(context);
+
+            // Assert
+            Assert.Equal(canTrim ,context.BindingMetadata.CanTrim);
+            Assert.Equal(trimType, context.BindingMetadata.TrimType);
+        }
+
+        public static IEnumerable<object[]> ForParameter()
+        {
+
+            IEnumerable<object[]> list = new List<object[]> { 
+                new object[] { ParameterInfos.StringParameterInfo,TrimType.TrimEnd, true},
+                new object[] { ParameterInfos.SampleParameterInfo, TrimType.Trim, false}
+            };
+            return list;
+        }
+
         [BindNever]
         private class BindNeverOnClass
         {
@@ -693,9 +755,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             {
             }
 
+            public void StringParamMethod(string param)
+            {
+            }
+
             public static ParameterInfo SampleParameterInfo
                 = typeof(ParameterInfos)
                     .GetMethod(nameof(ParameterInfos.Method))
+                    .GetParameters()[0];
+
+            public static ParameterInfo StringParameterInfo
+                = typeof(ParameterInfos)
+                    .GetMethod(nameof(ParameterInfos.StringParamMethod))
                     .GetParameters()[0];
         }
 

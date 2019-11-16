@@ -75,7 +75,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
             context.BindingMetadata.CanTrim = FindCanTrim(context);
             context.BindingMetadata.TrimType = FindTrimType(context);
-
         }
 
         private static bool FindCanTrim(BindingMetadataProviderContext context)
@@ -111,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                     var trimAttribute = context.PropertyAttributes.OfType<TrimAttribute>().FirstOrDefault();
                     return trimAttribute.TrimType;
                 case ModelMetadataKind.Parameter:
-                    trimAttribute = context.PropertyAttributes.OfType<TrimAttribute>().FirstOrDefault();
+                    trimAttribute = context.ParameterAttributes.OfType<TrimAttribute>().FirstOrDefault();
                     return trimAttribute.TrimType;
                 default:
                     return default;

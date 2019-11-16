@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     }
                     else
                     {
-                        model = value;
+                        model = TrimModel(bindingContext, value);
                     }
                 }
                 else if (string.IsNullOrWhiteSpace(value))
@@ -89,8 +89,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                         culture: valueProviderResult.Culture,
                         value: value);
                 }
-
-                TrimModel(bindingContext, value, model);
 
                 CheckModel(bindingContext, valueProviderResult, model);
 
@@ -138,22 +136,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
         }
 
-        private void TrimModel(ModelBindingContext bindingContext, string value, object model)
+        private string TrimModel(ModelBindingContext bindingContext, string value)
         {
-            if (bindingContext.ModelMetadata.CanTrim && !string.IsNullOrWhiteSpace(value))
+            if (!bindingContext.ModelMetadata.CanTrim)
             {
-                switch (bindingContext.ModelMetadata.TrimType)
-                {
-                    case TrimType.TrimEnd:
-                        model = value.TrimEnd();
-                        break;
-                    case TrimType.TrimStart:
-                        model = value.TrimStart();
-                        break;
-                    case TrimType.Trim:
-                        model = value.Trim();
-                        break;
-                }
+                return value;
+            }
+            switch (bindingContext.ModelMetadata.TrimType)
+            {
+                case TrimType.TrimEnd:
+                    return value.TrimEnd();
+                case TrimType.TrimStart:
+                    return value.TrimStart();
+                case TrimType.Trim:
+                    return value.Trim();
+                default:
+                    return value;
             }
         }
 

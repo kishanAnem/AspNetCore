@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public enum TrimType
     {
         Trim,
-        TrimEnd,
-        TrimStart
+        TrimStart,
+        TrimEnd
     }
 }

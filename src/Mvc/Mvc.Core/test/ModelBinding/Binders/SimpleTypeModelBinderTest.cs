@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
@@ -485,6 +486,46 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.True(bindingContext.Result.IsModelSet);
             var boundModel = Assert.IsType<FlagsEnum>(bindingContext.Result.Model);
             Assert.Equal((FlagsEnum)expected, boundModel);
+        }
+
+        [Theory]
+        [InlineData(" value","value", TrimType.TrimStart, true)]
+        [InlineData(" value ", "value", TrimType.Trim, true)]
+        [InlineData(" value ", " value", TrimType.TrimEnd, true)]
+        [InlineData(" value ", " value ", TrimType.TrimEnd, false)]
+        public async Task CanTrim(string value, string expectedValue, TrimType trimType, bool canTrim)
+        {
+            // Arrange
+            var trimAttribute = new object[] { new TrimAttribute(trimType) };
+            var provider = new EmptyModelMetadataProvider();
+            var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+
+            var key = ModelMetadataIdentity.ForProperty(typeof(string), "name", typeof(MetadataClass));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], trimAttribute, null))
+            {
+                BindingMetadata = new BindingMetadata()
+                {
+                    CanTrim = canTrim,
+                    TrimType = trimType
+                },
+            };
+
+            var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+            var bindingContext = GetBindingContext(typeof(string));
+            bindingContext.ModelMetadata = metadata;
+
+            bindingContext.ValueProvider = new SimpleValueProvider
+            {
+                { "theModelName", value }
+            };
+
+            var binder = new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance);
+
+            // Act
+            await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.Equal(expectedValue, bindingContext.Result.Model);
         }
 
         private static DefaultModelBindingContext GetBindingContext(Type modelType)
