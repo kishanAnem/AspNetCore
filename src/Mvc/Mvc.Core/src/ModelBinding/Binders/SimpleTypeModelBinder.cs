@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     }
                     else
                     {
-                        model = TrimModel(bindingContext, value);
+                        model = value;
                     }
                 }
                 else if (string.IsNullOrWhiteSpace(value))
@@ -135,25 +135,5 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 bindingContext.Result = ModelBindingResult.Success(model);
             }
         }
-
-        private string TrimModel(ModelBindingContext bindingContext, string value)
-        {
-            if (!bindingContext.ModelMetadata.CanTrim)
-            {
-                return value;
-            }
-            switch (bindingContext.ModelMetadata.TrimType)
-            {
-                case TrimType.TrimEnd:
-                    return value.TrimEnd();
-                case TrimType.TrimStart:
-                    return value.TrimStart();
-                case TrimType.Trim:
-                    return value.Trim();
-                default:
-                    return value;
-            }
-        }
-
     }
 }

@@ -89,10 +89,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             switch (context.Key.MetadataKind)
             {
                 case ModelMetadataKind.Property:
-                    return context.PropertyAttributes.OfType<TrimAttribute>().Any() && isSringType;
-
+                    return context.PropertyAttributes.OfType<TrimAttribute>().Any();
                 case ModelMetadataKind.Parameter:
-                    return context.ParameterAttributes.OfType<TrimAttribute>().Any() && isSringType;
+                    return context.ParameterAttributes.OfType<TrimAttribute>().Any();
                 default:
                     return false;
             }

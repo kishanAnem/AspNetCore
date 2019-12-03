@@ -294,6 +294,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             }
         }
 
+        /// <inheritdoc />
         public override bool CanTrim
         {
             get

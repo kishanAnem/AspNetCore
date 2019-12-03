@@ -402,13 +402,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract Action<object, object> PropertySetter { get; }
 
         /// <summary>
-        /// Gets a value indicating whether or not the model value can trim. This is only
+        /// Gets a value indicating whether or not the model value can trim <see cref="CanTrim"/>. This is only
         /// applicable for string properties.
         /// </summary>
         /// <remarks>
         /// If <c>true</c> then the model value has value, it can consider trim.
         /// </remarks>
         public abstract bool CanTrim { get; }
+
+        /// <summary>
+        ///  Gets a value indicating whether or not <see cref="TrimType"/> is an enumerable type.
+        /// <remarks>
+        /// If <see cref="CanTrim"/> <c>true</c> . Based on <see cref="TrimType"/> decide to where to trim
+        /// </remarks>
+        /// </summary>
         public abstract TrimType TrimType { get; }
 
         /// <summary>
